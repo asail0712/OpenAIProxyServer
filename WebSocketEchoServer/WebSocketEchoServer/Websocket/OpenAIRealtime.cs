@@ -190,19 +190,7 @@ namespace WebSocketEchoServer.Websocket
                     }
                 });
 
-                try
-                {
-                    recvTask = ReceiveLoop();
-                }
-                catch (TimeoutException)
-                {
-                    EmitOnMain(() => OnLoggingDone(DebugLevel.Warning, "No frames received within timeout; close as zombie."));
-                    await CloseAsync("idle-timeout", true).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    EmitOnMain(() => OnLoggingDone(DebugLevel.Warning, $"Receive error: {ex.Message}"));
-                }
+                recvTask = ReceiveLoop();
             }
 
             return bConnected;
@@ -256,7 +244,7 @@ namespace WebSocketEchoServer.Websocket
             // 4) 清空本地播放緩衝，避免播放殘留
             //EmitOnMain(() => OnAssistantAudioDelta?.Invoke(Array.Empty<byte>()));
 
-            EmitOnMain(() => OnLoggingDone(DebugLevel.Log, $"Barge-in triggered at {playedMsSoFar} ms"));
+            EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Log, $"Barge-in triggered at {playedMsSoFar} ms"));
         }
 
         public async Task SendTextAsync(string inst)
@@ -299,7 +287,7 @@ namespace WebSocketEchoServer.Websocket
                 }
             }
             catch (OperationCanceledException) { /* ignore on shutdown */ }
-            catch (WebSocketException wse) { EmitOnMain(() => OnLoggingDone(DebugLevel.Warning, $"Send error: {wse.Message}")); }
+            catch (WebSocketException wse) { EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Warning, $"Send error: {wse.Message}")); }
             finally
             {
                 _sendLock.Release();
@@ -324,7 +312,7 @@ namespace WebSocketEchoServer.Websocket
                         res = await ReceiveOnceWithTimeout(receiveIdleTimeout);
                         if (res.MessageType == WebSocketMessageType.Close)
                         {
-                            EmitOnMain(() => OnLoggingDone(DebugLevel.Warning, $"Realtime closed: {res.CloseStatus} {res.CloseStatusDescription}"));
+                            EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Warning, $"Realtime closed: {res.CloseStatus} {res.CloseStatusDescription}"));
                             bConnected = false;
                             break;
                         }
@@ -332,9 +320,14 @@ namespace WebSocketEchoServer.Websocket
                     }
                     while (!res.EndOfMessage);
                 }
+                catch (TimeoutException)
+                {
+                    EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Warning, "No frames received within timeout; close as zombie."));
+                    await CloseAsync("idle-timeout", true).ConfigureAwait(false);
+                }
                 catch (Exception ex)
                 {
-                    EmitOnMain(() => OnLoggingDone(DebugLevel.Warning, $"Receive error: {ex.Message}"));
+                    EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Warning, $"Receive error: {ex.Message}"));
                     break;
                 }
 
@@ -364,7 +357,7 @@ namespace WebSocketEchoServer.Websocket
             try { jo = JObject.Parse(jsonLine); }
             catch
             {
-                if (jsonLine.Contains("\"error\"")) EmitOnMain(() => OnLoggingDone(DebugLevel.Error, $"SERVER ERROR (raw): {jsonLine}"));
+                if (jsonLine.Contains("\"error\"")) EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Error, $"SERVER ERROR (raw): {jsonLine}"));
                 return;
             }
 
@@ -411,7 +404,7 @@ namespace WebSocketEchoServer.Websocket
                         {
                             EmitOnMain(() => OnAssistantTextDelta?.Invoke(txt));
                         }
-                        EmitOnMain(() => OnLoggingDone(DebugLevel.Log, $"ASSISTANT TEXT DELTA: {txt}"));
+                        EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Log, $"ASSISTANT TEXT DELTA: {txt}"));
 
                         return;
                     }
@@ -424,7 +417,7 @@ namespace WebSocketEchoServer.Websocket
                         {
                             EmitOnMain(() => OnAssistantTextDone?.Invoke(txt));
                         }
-                        EmitOnMain(() => OnLoggingDone(DebugLevel.Log, $"ASSISTANT TEXT: {txt}"));
+                        EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Log, $"ASSISTANT TEXT: {txt}"));
                         textBuilder.Clear();
                         return;
                     }
@@ -456,7 +449,7 @@ namespace WebSocketEchoServer.Websocket
 
                             EmitOnMain(() => OnAssistantAudioDelta?.Invoke(bytes));
                         }
-                        catch (Exception e) { EmitOnMain(() => OnLoggingDone(DebugLevel.Warning, $"Audio delta decode error: {e.Message}")); }
+                        catch (Exception e) { EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Warning, $"Audio delta decode error: {e.Message}")); }
                         return;
                     }
                 case "response.output_audio.done":
@@ -501,7 +494,7 @@ namespace WebSocketEchoServer.Websocket
                     {
                         string code = (string)jo["error"]?["code"];
                         string msg  = (string)jo["error"]?["message"];
-                        EmitOnMain(() => OnLoggingDone(DebugLevel.Error, $"SERVER ERROR: code={code}, message={msg}\n{jsonLine}"));
+                        EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Error, $"SERVER ERROR: code={code}, message={msg}\n{jsonLine}"));
                         return;
                     }
 
