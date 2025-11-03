@@ -12,11 +12,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Service\Service.csproj" />
     <ProjectReference Include="..\XPlan\XPlan.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Common\" />
+    <Folder Include="Controller\" />
   </ItemGroup>
 
 </Project>
