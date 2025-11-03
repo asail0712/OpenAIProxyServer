@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
 
-namespace WebSocketEchoServer.Websocket
+namespace OpenAIProxyService.Websocket
 {
     public enum DebugLevel
     {

@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using XPlan.Controller;
 
-namespace Controllers
+namespace OpenAIProxyService.Controllers
 {
     [ApiController]
     [Route("[controller]")]

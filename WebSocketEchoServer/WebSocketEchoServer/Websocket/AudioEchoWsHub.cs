@@ -5,7 +5,7 @@ using System.Text.Json;
 
 using XPlan.WebSockets;
 
-namespace WebSocketEchoServer.Websocket
+namespace OpenAIProxyService.Websocket
 {
     public class AudioEchoWsHub : WebsocketBase
     {
