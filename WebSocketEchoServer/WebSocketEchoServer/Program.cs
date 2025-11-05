@@ -137,7 +137,10 @@ if (app.Environment.IsDevelopment())
 /***********************************************************************************************
 * 其他
 ************************************************************************************************/
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();              // 先認證身分
 app.UseAuthorization();               // 再授權權限

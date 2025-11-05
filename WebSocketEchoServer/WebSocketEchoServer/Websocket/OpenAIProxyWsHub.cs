@@ -1,5 +1,7 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using System.Text;
 using System.Text.Json;
 
 using XPlan.WebSockets;
@@ -164,6 +166,19 @@ namespace OpenAIProxyService.Websocket
         // -----------------------------------------
         // Client 傳上來的訊息
         // -----------------------------------------
+        public override async Task HandleBinaryAsync(string fromUid, byte[] bytes)
+        {
+            if (!_rtByUid.TryGetValue(fromUid, out var rt) || rt is null || !rt.IsConnected())
+            {
+                TrySend(fromUid, new { Type = "error", Payload = "realtime_not_ready" });
+                return;
+            }
+
+            var b64 = Convert.ToBase64String(bytes, 0, bytes.Length);
+
+            await rt.SendAudioBase64Async(b64);
+        }
+
         public override async Task HandleTextAsync(string fromUid, string json)
         {
             if (!_rtByUid.TryGetValue(fromUid, out var rt) || rt is null || !rt.IsConnected())

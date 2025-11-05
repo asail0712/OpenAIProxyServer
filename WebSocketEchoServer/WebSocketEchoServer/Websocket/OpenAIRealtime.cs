@@ -58,6 +58,7 @@ namespace OpenAIProxyService.Websocket
         // events
         public event Action OnResposeStart;
         public event Action OnResposeFinish;
+        public event Action<string> OnUserTranscriptDelta;
         public event Action<string> OnUserTranscriptDone;
         public event Action<string> OnAssistantTextDelta;
         public event Action<string> OnAssistantTextDone;
@@ -462,6 +463,7 @@ namespace OpenAIProxyService.Websocket
                 case "conversation.item.input_audio_transcription.delta":
                     {
                         string d = (string)jo["delta"]; if (!string.IsNullOrEmpty(d)) _userTranscript.Append(d);
+                        EmitOnMain(() => OnUserTranscriptDelta?.Invoke(d));
                         return;
                     }
                 case "conversation.item.input_audio_transcription.completed":
