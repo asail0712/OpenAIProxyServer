@@ -483,7 +483,7 @@ namespace OpenAIProxyService.Websocket
                     }
                 case "conversation.item.input_audio_transcription.completed":
                     {
-                        string text = (string)jo["text"];
+                        string text = _userTranscript.ToString();
                         if (!string.IsNullOrEmpty(text))
                         {
                             EmitOnMain(() => OnUserTranscriptDone?.Invoke(text));
