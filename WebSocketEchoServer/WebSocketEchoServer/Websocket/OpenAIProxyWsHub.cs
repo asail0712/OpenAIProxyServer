@@ -10,15 +10,16 @@ namespace OpenAIProxyService.Websocket
 {
     public static class AudioMsgTypes
     {
-        public const string Start                   = "audio.Start";                    // server -> client
-        public const string Finish                  = "audio.Finish";                   // server -> client
-        public const string Logging                 = "audio.Logging";                  // server -> client
+        public const string Start                       = "audio.Start";                    // server -> client
+        public const string Finish                      = "audio.Finish";                   // server -> client
+        public const string Logging                     = "audio.Logging";                  // server -> client
 
-        public const string Send                    = "audio.Send";                     // client -> server
-        public const string InterruptReceive        = "audio.InterruptReceive";         // client -> server
-        public const string ReceiveAssistantAudio   = "audio.ReceiveAssistantAudio";    // server -> client
-        public const string ReceiveAssistantText    = "audio.ReceiveAssistantText";     // server -> client
-        public const string ReceiveUserText         = "audio.ReceiveUserText";          // server -> client
+        public const string Send                        = "audio.Send";                     // client -> server
+        public const string InterruptReceive            = "audio.InterruptReceive";         // client -> server
+        public const string ReceiveAssistantAudio       = "audio.ReceiveAssistantAudio";    // server -> client
+        public const string ReceiveAssistantTextDelta   = "audio.ReceiveAssistantTextDelta";// server -> client
+        public const string ReceiveAssistantTextDone    = "audio.ReceiveAssistantTextDone"; // server -> client
+        public const string ReceiveUserTextDone         = "audio.ReceiveUserTextDone";      // server -> client
     }
 
     public class AIMessage
@@ -97,7 +98,16 @@ namespace OpenAIProxyService.Websocket
             {
                 TrySend(uid, new
                 {
-                    Type    = AudioMsgTypes.ReceiveUserText,
+                    Type    = AudioMsgTypes.ReceiveUserTextDone,
+                    Payload = txt
+                });
+            };
+
+            rt.OnAssistantTextDone += (txt) =>
+            {
+                TrySend(uid, new
+                {
+                    Type    = AudioMsgTypes.ReceiveAssistantTextDone,
                     Payload = txt
                 });
             };
@@ -106,7 +116,7 @@ namespace OpenAIProxyService.Websocket
             {
                 TrySend(uid, new 
                 { 
-                    Type    = AudioMsgTypes.ReceiveAssistantText, 
+                    Type    = AudioMsgTypes.ReceiveAssistantTextDelta, 
                     Payload = txt
                 });
             };
