@@ -8,18 +8,20 @@ using XPlan.WebSockets;
 
 namespace OpenAIProxyService.Websocket
 {
-    public static class AudioMsgTypes
+    public static class AIRealTimeTypes
     {
-        public const string Start                       = "audio.Start";                    // server -> client
-        public const string Finish                      = "audio.Finish";                   // server -> client
-        public const string Logging                     = "audio.Logging";                  // server -> client
+        public const string Start                       = "AIRealTime.Start";                    // server -> client
+        public const string Finish                      = "AIRealTime.Finish";                   // server -> client
+        public const string Logging                     = "AIRealTime.Logging";                  // server -> client
 
-        public const string Send                        = "audio.Send";                     // client -> server
-        public const string InterruptReceive            = "audio.InterruptReceive";         // client -> server
-        public const string ReceiveAssistantAudio       = "audio.ReceiveAssistantAudio";    // server -> client
-        public const string ReceiveAssistantTextDelta   = "audio.ReceiveAssistantTextDelta";// server -> client
-        public const string ReceiveAssistantTextDone    = "audio.ReceiveAssistantTextDone"; // server -> client
-        public const string ReceiveUserTextDone         = "audio.ReceiveUserTextDone";      // server -> client
+        public const string Send                        = "AIRealTime.Send";                     // client -> server
+        public const string InterruptReceive            = "AIRealTime.InterruptReceive";         // client -> server
+        public const string ReceiveAssistantAudio       = "AIRealTime.ReceiveAssistantAudio";    // server -> client
+        public const string ReceiveAssistantTextDelta   = "AIRealTime.ReceiveAssistantTextDelta";// server -> client
+        public const string ReceiveAssistantTextDone    = "AIRealTime.ReceiveAssistantTextDone"; // server -> client
+        public const string ReceiveUserTextDelta        = "AIRealTime.ReceiveUserTextDelta";     // server -> client
+        public const string ReceiveUserTextDone         = "AIRealTime.ReceiveUserTextDone";      // server -> client
+        
     }
 
     public class AIMessage
@@ -84,21 +86,32 @@ namespace OpenAIProxyService.Websocket
             {
                 TrySend(uid, new 
                 { 
-                    Type = AudioMsgTypes.Start,
+                    Type = AIRealTimeTypes.Start,
                 });
             };
+
             rt.OnResposeFinish      += () =>
             {
                 TrySend(uid, new 
                 {
-                    Type = AudioMsgTypes.Finish,
+                    Type = AIRealTimeTypes.Finish,
                 });
             };
+
+            rt.OnUserTranscriptDelta += (txt) => 
+            {
+                TrySend(uid, new
+                {
+                    Type    = AIRealTimeTypes.ReceiveUserTextDelta,
+                    Payload = txt
+                });
+            };
+
             rt.OnUserTranscriptDone += (txt) =>
             {
                 TrySend(uid, new
                 {
-                    Type    = AudioMsgTypes.ReceiveUserTextDone,
+                    Type    = AIRealTimeTypes.ReceiveUserTextDone,
                     Payload = txt
                 });
             };
@@ -107,7 +120,7 @@ namespace OpenAIProxyService.Websocket
             {
                 TrySend(uid, new
                 {
-                    Type    = AudioMsgTypes.ReceiveAssistantTextDone,
+                    Type    = AIRealTimeTypes.ReceiveAssistantTextDone,
                     Payload = txt
                 });
             };
@@ -116,7 +129,7 @@ namespace OpenAIProxyService.Websocket
             {
                 TrySend(uid, new 
                 { 
-                    Type    = AudioMsgTypes.ReceiveAssistantTextDelta, 
+                    Type    = AIRealTimeTypes.ReceiveAssistantTextDelta, 
                     Payload = txt
                 });
             };
@@ -127,7 +140,7 @@ namespace OpenAIProxyService.Websocket
             {
                 TrySend(uid, new 
                 { 
-                    Type        = AudioMsgTypes.ReceiveAssistantAudio,
+                    Type        = AIRealTimeTypes.ReceiveAssistantAudio,
                     Payload     = Convert.ToBase64String(bytes),
                 });
             };
@@ -138,7 +151,7 @@ namespace OpenAIProxyService.Websocket
             {
                 TrySend(uid, new
                 {
-                    Type    = AudioMsgTypes.Logging,
+                    Type    = AIRealTimeTypes.Logging,
                     Payload = $"[{lvl.ToString()}] {msg}"
                 });
             };
@@ -220,7 +233,7 @@ namespace OpenAIProxyService.Websocket
             switch (env?.Type)
             {
                 // 用戶傳純文字 -> 要求助理生成（text + audio）
-                case AudioMsgTypes.Send:
+                case AIRealTimeTypes.Send:
                     {
                         if (string.IsNullOrWhiteSpace(env.Payload))
                         {
@@ -230,7 +243,7 @@ namespace OpenAIProxyService.Websocket
                         await rt.SendAudioBase64Async(env?.Payload!);
                         break;
                     }
-                case AudioMsgTypes.InterruptReceive:
+                case AIRealTimeTypes.InterruptReceive:
                     {
                         await rt.BargeInAsync(0f);
                         break;
