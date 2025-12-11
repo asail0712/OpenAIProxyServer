@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace OpenAIProxyService.Websocket
 {
@@ -27,6 +28,7 @@ namespace OpenAIProxyService.Websocket
         public string voice             = "alloy";
         public string basicInstructions = "You are a helpful, concise voice assistant.";
         public bool bAutoCreateResponse = false;
+        public bool bSendDebugInfo      = false;
 
         // ===============================
         // Internals - WS
@@ -35,7 +37,6 @@ namespace OpenAIProxyService.Websocket
         private CancellationTokenSource _cts;
         private Uri _uri;
         private volatile bool bConnected;
-        private readonly StringBuilder _userTranscript  = new();                    // text/ASR    
         private readonly byte[] _recvBuffer             = new byte[1 << 16];        // buffers 64KB    
         private volatile bool bResponseInFlight;                                    // response lifecycle (simple)
         private TimeSpan receiveIdleTimeout             = TimeSpan.FromSeconds(90); // 90秒來判定是否為殭屍連線
@@ -119,7 +120,7 @@ namespace OpenAIProxyService.Websocket
                         await recvTask.ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) { /* 正常 */ }
-                catch (Exception ex) { EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Warning, $"Recv loop ended with: {ex.Message}")); }
+                catch (Exception ex) { EmitOnMain(() => OnLogging(DebugLevel.Warning, $"Recv loop ended with: {ex.Message}")); }
             }
 
             // 3) 禮貌關閉（帶 timeout 避免無限卡住）
@@ -164,7 +165,7 @@ namespace OpenAIProxyService.Websocket
             }
             catch (Exception ex)
             {
-                EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Error, $"Realtime connect failed: {ex.Message}"));
+                EmitOnMain(() => OnLogging(DebugLevel.Error, $"Realtime connect failed: {ex.Message}"));
                 bConnected = false;
             }
 
@@ -245,7 +246,7 @@ namespace OpenAIProxyService.Websocket
             // 4) 清空本地播放緩衝，避免播放殘留
             //EmitOnMain(() => OnAssistantAudioDelta?.Invoke(Array.Empty<byte>()));
 
-            EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Log, $"Barge-in triggered at {playedMsSoFar} ms"));
+            EmitOnMain(() => OnLogging(DebugLevel.Log, $"Barge-in triggered at {playedMsSoFar} ms"));
         }
 
         public async Task SendTextAsync(string text, bool wantAudio = true)
@@ -303,7 +304,7 @@ namespace OpenAIProxyService.Websocket
                 }
             }
             catch (OperationCanceledException) { /* ignore on shutdown */ }
-            catch (WebSocketException wse) { EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Warning, $"Send error: {wse.Message}")); }
+            catch (WebSocketException wse) { EmitOnMain(() => OnLogging(DebugLevel.Warning, $"Send error: {wse.Message}")); }
             finally
             {
                 _sendLock.Release();
@@ -315,7 +316,8 @@ namespace OpenAIProxyService.Websocket
         // ===============================
         private async Task ReceiveLoop()
         {
-            var textBuilder = new StringBuilder();
+            var userSpeechBuilder   = new StringBuilder();
+            var aiSpeechBuilder     = new StringBuilder();
 
             while (bConnected && _ws.State == WebSocketState.Open && !_cts.Token.IsCancellationRequested)
             {
@@ -328,7 +330,7 @@ namespace OpenAIProxyService.Websocket
                         res = await ReceiveOnceWithTimeout(receiveIdleTimeout);
                         if (res.MessageType == WebSocketMessageType.Close)
                         {
-                            EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Warning, $"Realtime closed: {res.CloseStatus} {res.CloseStatusDescription}"));
+                            EmitOnMain(() => OnLogging(DebugLevel.Warning, $"Realtime closed: {res.CloseStatus} {res.CloseStatusDescription}"));
                             bConnected = false;
                             break;
                         }
@@ -338,12 +340,12 @@ namespace OpenAIProxyService.Websocket
                 }
                 catch (TimeoutException)
                 {
-                    EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Warning, "No frames received within timeout; close as zombie."));
+                    EmitOnMain(() => OnLogging(DebugLevel.Warning, "No frames received within timeout; close as zombie."));
                     await CloseAsync("idle-timeout", true).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Warning, $"Receive error: {ex.Message}"));
+                    EmitOnMain(() => OnLogging(DebugLevel.Warning, $"Receive error: {ex.Message}"));
                     break;
                 }
 
@@ -362,18 +364,18 @@ namespace OpenAIProxyService.Websocket
                         continue;
                     }
 
-                    HandleServerEvent(line, textBuilder);
+                    HandleServerEvent(line, userSpeechBuilder, aiSpeechBuilder);
                 }
             }
         }
 
-        private void HandleServerEvent(string jsonLine, StringBuilder textBuilder)
+        private void HandleServerEvent(string jsonLine, StringBuilder userSpeechBuilder, StringBuilder aiSpeechBuilder)
         {
             JObject jo;
             try { jo = JObject.Parse(jsonLine); }
             catch
             {
-                if (jsonLine.Contains("\"error\"")) EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Error, $"SERVER ERROR (raw): {jsonLine}"));
+                if (jsonLine.Contains("\"error\"")) EmitOnMain(() => OnLogging(DebugLevel.Error, $"SERVER ERROR (raw): {jsonLine}"));
                 return;
             }
 
@@ -412,15 +414,15 @@ namespace OpenAIProxyService.Websocket
                         string d = (string)jo["delta"];
                         if (!string.IsNullOrEmpty(d))
                         {
-                            textBuilder.Append(d);
+                            aiSpeechBuilder.Append(d);
                         }
 
-                        string txt = textBuilder.ToString();
+                        string txt = aiSpeechBuilder.ToString();
                         if (!string.IsNullOrEmpty(txt))
                         {
                             EmitOnMain(() => OnAssistantTextDelta?.Invoke(txt));
                         }
-                        EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Log, $"ASSISTANT TEXT DELTA: {txt}"));
+                        EmitOnMain(() => OnLogging(DebugLevel.Log, $"ASSISTANT TEXT DELTA: {txt}"));
 
                         return;
                     }
@@ -428,13 +430,13 @@ namespace OpenAIProxyService.Websocket
                 case "response.output_text.done":
                 case "response.text.done":
                     {
-                        string txt = textBuilder.ToString();
+                        string txt = aiSpeechBuilder.ToString();
                         if (!string.IsNullOrEmpty(txt))
                         {
                             EmitOnMain(() => OnAssistantTextDone?.Invoke(txt));
                         }
-                        EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Log, $"ASSISTANT TEXT: {txt}"));
-                        textBuilder.Clear();
+                        EmitOnMain(() => OnLogging(DebugLevel.Log, $"ASSISTANT TEXT: {txt}"));
+                        aiSpeechBuilder.Clear();
                         return;
                     }
 
@@ -465,7 +467,7 @@ namespace OpenAIProxyService.Websocket
 
                             EmitOnMain(() => OnAssistantAudioDelta?.Invoke(bytes));
                         }
-                        catch (Exception e) { EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Warning, $"Audio delta decode error: {e.Message}")); }
+                        catch (Exception e) { EmitOnMain(() => OnLogging(DebugLevel.Warning, $"Audio delta decode error: {e.Message}")); }
                         return;
                     }
                 case "response.output_audio.done":
@@ -477,19 +479,31 @@ namespace OpenAIProxyService.Websocket
                 // --- Assistant ASR of user audio (optional hooks) ---
                 case "conversation.item.input_audio_transcription.delta":
                     {
-                        string d = (string)jo["delta"]; if (!string.IsNullOrEmpty(d)) _userTranscript.Append(d);
-                        EmitOnMain(() => OnUserTranscriptDelta?.Invoke(d));
+                        string d = (string)jo["delta"];
+                        if (!string.IsNullOrEmpty(d))
+                        {
+                            userSpeechBuilder.Append(d);
+                        }
+
+                        string txt = userSpeechBuilder.ToString();
+                        if (!string.IsNullOrEmpty(txt))
+                        {
+                            EmitOnMain(() => OnUserTranscriptDelta?.Invoke(txt));
+                        }
+                        EmitOnMain(() => OnLogging(DebugLevel.Log, $"ASSISTANT TEXT DELTA: {txt}"));
+
                         return;
                     }
                 case "conversation.item.input_audio_transcription.completed":
                     {
-                        string text = _userTranscript.ToString();
+                        string text = userSpeechBuilder.ToString();
                         if (!string.IsNullOrEmpty(text))
                         {
                             EmitOnMain(() => OnUserTranscriptDone?.Invoke(text));
                             Console.WriteLine($"[Log] USER TRANSCRIPT: {text}");
                         }
-                        _userTranscript.Clear();
+                        userSpeechBuilder.Clear();
+
                         if (bAutoCreateResponse && !bResponseInFlight)
                         {
                             _ = SendAsync(new { type = "input_audio_buffer.commit" });
@@ -511,7 +525,7 @@ namespace OpenAIProxyService.Websocket
                     {
                         string code = (string)jo["error"]?["code"];
                         string msg  = (string)jo["error"]?["message"];
-                        EmitOnMain(() => OnLoggingDone?.Invoke(DebugLevel.Error, $"SERVER ERROR: code={code}, message={msg}\n{jsonLine}"));
+                        EmitOnMain(() => OnLogging(DebugLevel.Error, $"SERVER ERROR: code={code}, message={msg}\n{jsonLine}"));
                         return;
                     }
 
@@ -519,6 +533,16 @@ namespace OpenAIProxyService.Websocket
                     // Unhandled events are fine for now
                     return;
             }
+        }
+
+        private void OnLogging(DebugLevel lv, string s)
+        {
+            if(!bSendDebugInfo)
+            {
+                return;
+            }
+
+            OnLoggingDone?.Invoke(lv, s);
         }
 
         private void EmitOnMain(Action action)
