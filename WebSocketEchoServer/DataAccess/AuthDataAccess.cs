@@ -5,9 +5,9 @@ using XPlan.DataAccess;
 
 namespace DataAccess
 {
-    public class LoginDataAccess : MongoEntityDataAccess<LoginEntity, LoginDocument>, ILoginDataAccess
+    public class AuthDataAccess : MongoEntityDataAccess<AuthEntity, AuthDocument>, IAuthDataAccess
     {
-        public LoginDataAccess(IMapper mapper)
+        public AuthDataAccess(IMapper mapper)
             : base(mapper)
         {
         }

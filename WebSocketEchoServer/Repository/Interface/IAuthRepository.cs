@@ -4,7 +4,7 @@ using XPlan.Repository;
 
 namespace Repository.Interface
 {
-    public interface ILoginRepository : IRepository<LoginEntity>
+    public interface IAuthRepository : IRepository<AuthEntity>
     {
     }
 }

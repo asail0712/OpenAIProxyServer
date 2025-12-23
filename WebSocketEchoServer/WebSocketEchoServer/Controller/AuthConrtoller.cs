@@ -12,9 +12,9 @@ namespace OpenAIProxyService.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class LoginController : GenericController<LoginRequest, LoginResponse, ILoginService>
+    public class AuthController : GenericController<LoginRequest, LoginResponse, IAuthService>
     {
-        public LoginController(ILoginService service)
+        public AuthController(IAuthService service)
             : base(service)
         {
 

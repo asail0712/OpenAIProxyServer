@@ -10,9 +10,9 @@ using Common.DTO.Login;
 
 namespace Repository
 {
-    public class LoginRepository : GenericRepository<LoginEntity, ILoginDataAccess>, ILoginRepository
+    public class AuthRepository : GenericRepository<AuthEntity, IAuthDataAccess>, IAuthRepository
     {
-        public LoginRepository(ILoginDataAccess dataAccess, IMemoryCache memoryCache, IOptions<CacheSettings> cacheSettings) 
+        public AuthRepository(IAuthDataAccess dataAccess, IMemoryCache memoryCache, IOptions<CacheSettings> cacheSettings) 
             : base(dataAccess, memoryCache, cacheSettings)
         {
 

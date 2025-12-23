@@ -6,9 +6,9 @@ using XPlan.Service;
 
 namespace Service
 {
-    public class LoginService : GenericService<LoginEntity, LoginRequest, LoginResponse, ILoginRepository>, ILoginService
+    public class AuthService : GenericService<AuthEntity, LoginRequest, LoginResponse, IAuthRepository>, IAuthService
     {
-        public LoginService(ILoginRepository repo, IMapper mapper) 
+        public AuthService(IAuthRepository repo, IMapper mapper) 
             : base(repo, mapper)
         {
         }

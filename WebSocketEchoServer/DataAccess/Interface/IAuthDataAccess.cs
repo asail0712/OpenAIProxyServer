@@ -3,7 +3,7 @@ using XPlan.DataAccess;
 
 namespace DataAccess.Interface
 {
-    public interface ILoginDataAccess : IDataAccess<LoginEntity>
+    public interface IAuthDataAccess : IDataAccess<AuthEntity>
     {
     }
 }

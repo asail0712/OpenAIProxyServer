@@ -11,17 +11,17 @@ namespace OpenAIProxyService.Extension
     {
         static public void AddDataAccesses(this IServiceCollection services)
         {
-            services.AddScoped<ILoginDataAccess, LoginDataAccess>();
+            services.AddScoped<IAuthDataAccess, AuthDataAccess>();
         }
 
         static public void AddRepositorys(this IServiceCollection services)
         {
-            services.AddScoped<ILoginRepository, LoginRepository>();
+            services.AddScoped<IAuthRepository, AuthRepository>();
         }
 
         static public void AddServices(this IServiceCollection services)
         {
-            services.AddScoped<ILoginService, LoginService>();
+            services.AddScoped<IAuthService, AuthService>();
         }
     }
 }

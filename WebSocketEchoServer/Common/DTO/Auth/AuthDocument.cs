@@ -5,7 +5,7 @@ using XPlan.Entities;
 
 namespace Common.DTO.Login
 {
-    public class LoginDocument : IEntity, IDBEntity
+    public class AuthDocument : IEntity, IDBEntity
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
