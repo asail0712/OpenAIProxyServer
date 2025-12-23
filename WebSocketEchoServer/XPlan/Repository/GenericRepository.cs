@@ -261,21 +261,21 @@ namespace XPlan.Repository
         }
 
         // 更新實體，同步更新快取
-        public virtual async Task UpdateAsync(string key, TEntity entity)
+        public virtual async Task<bool> UpdateAsync(string key, TEntity entity)
         {
             try
             {
                 bool bResult = await _dataAccess.UpdateAsync(key, entity);
 
-                if (!bResult)
+                if (bResult)
                 {
-                    throw new EntityNotFoundException(typeof(TEntity).Name, key);
+                    _cache.Set($"{_cachePrefix}:{key}", entity, TimeSpan.FromMinutes(_cacheDurationMinutes));
+                    _cache.Remove($"{_cachePrefix}:all");
+                    _cache.Remove($"{_cachePrefix}:exists:{key}");
+                    _cache.Remove($"{_cachePrefix}:findLast");
                 }
 
-                _cache.Set($"{_cachePrefix}:{key}", entity, TimeSpan.FromMinutes(_cacheDurationMinutes));
-                _cache.Remove($"{_cachePrefix}:all");
-                _cache.Remove($"{_cachePrefix}:exists:{key}");
-                _cache.Remove($"{_cachePrefix}:findLast");
+                return bResult;
             }
             catch (CustomException)
             {

@@ -22,7 +22,7 @@ namespace XPlan.Repository
         Task<List<TEntity>> GetAsync(List<string> key, bool bCache = true);
 
         // 更新指定 Key 的資料
-        Task UpdateAsync(string key, TEntity entity);
+        Task<bool> UpdateAsync(string key, TEntity entity);
 
         // 刪除指定 Key 的資料
         Task DeleteAsync(string key);
