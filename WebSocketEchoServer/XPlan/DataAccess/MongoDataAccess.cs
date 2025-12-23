@@ -11,7 +11,7 @@ namespace XPlan.DataAccess
         where TEntity : IDBEntity
     {
         private readonly IMongoCollection<TEntity> _collection;
-        private static bool _bIndexCreated      = false;
+        private bool _bIndexCreated             = false;
         private static string _searchFieldName  = "Id";
         private List<string> _noUpdateList;
 

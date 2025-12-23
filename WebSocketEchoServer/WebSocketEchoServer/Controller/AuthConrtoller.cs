@@ -19,5 +19,13 @@ namespace OpenAIProxyService.Controllers
         {
 
         }
+
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            var bResult = await _service.Login(request);
+
+            return Ok(bResult);
+        }
     }
 }

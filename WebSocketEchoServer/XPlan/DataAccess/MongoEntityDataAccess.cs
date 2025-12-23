@@ -15,8 +15,8 @@ namespace XPlan.DataAccess
         where TDocument : IEntity, IDBEntity, new() // 👈 注意繼承 Entity
     {
         private readonly IMapper _mapper;
-        private static bool _bIndexCreated      = false;
-        private static string _searchFieldName  = "Id";
+        private bool _bIndexCreated         = false;
+        private string _searchFieldName     = "Id";
         private List<string> _noUpdateList;
 
         // 建構子注入 AutoMapper
@@ -30,7 +30,7 @@ namespace XPlan.DataAccess
         protected void AddNoUpdateKey(string noUpdateKey)
         {
             _noUpdateList.Add(noUpdateKey);
-            _noUpdateList.Distinct(); // 雖然沒賦值，但應該只是希望排除重複
+            _noUpdateList = _noUpdateList.Distinct().ToList();
         }
 
         /// <summary>

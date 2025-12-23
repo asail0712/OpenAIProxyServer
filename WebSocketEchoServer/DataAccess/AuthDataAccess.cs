@@ -10,6 +10,8 @@ namespace DataAccess
         public AuthDataAccess(IMapper mapper)
             : base(mapper)
         {
+            EnsureIndexCreated("Account");
+            AddNoUpdateKey("PasswordHash");
         }
     }
 }
