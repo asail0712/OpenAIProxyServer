@@ -10,7 +10,7 @@ namespace XPlan.Repository
     public interface IRepository<TEntity> where TEntity : IDBEntity
     {
         // 建立新資料
-        Task<TEntity> CreateAsync(TEntity entity);
+        Task<TEntity> InsertAsync(TEntity entity);
 
         // 取得所有資料（可選擇是否使用快取）
         Task<List<TEntity>> GetAllAsync(bool bCache = true);

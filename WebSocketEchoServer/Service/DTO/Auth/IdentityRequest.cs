@@ -1,6 +1,6 @@
 ﻿namespace Service.DTO.Auth
 {
-    public class LoginRequest
+    public class IdentityRequest
     {
         public string Account { get; set; }     = string.Empty;
         public string Password { get; set; }    = string.Empty;

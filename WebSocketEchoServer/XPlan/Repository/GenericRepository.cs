@@ -31,7 +31,7 @@ namespace XPlan.Repository
         }
 
         // 建立實體並寫入快取
-        public virtual async Task<TEntity> CreateAsync(TEntity entity)
+        public virtual async Task<TEntity> InsertAsync(TEntity entity)
         {
             try
             {

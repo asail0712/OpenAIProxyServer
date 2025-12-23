@@ -8,7 +8,7 @@ namespace OpenAIProxyService.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AuthController : GenericController<LoginRequest, LoginResponse, IAuthService>
+    public class AuthController : GenericController<IdentityRequest, LoginResponse, IAuthService>
     {
         public AuthController(IAuthService service)
             : base(service)
@@ -17,9 +17,17 @@ namespace OpenAIProxyService.Controllers
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] IdentityRequest request)
         {
             var bResult = await _service.Login(request);
+
+            return Ok(bResult);
+        }
+
+        [HttpPost("CreateIdentity")]
+        public async Task<IActionResult> CreateIdentity([FromBody] IdentityRequest request)
+        {
+            var bResult = await _service.CreateIdentity(request);
 
             return Ok(bResult);
         }
