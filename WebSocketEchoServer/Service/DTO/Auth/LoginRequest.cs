@@ -1,4 +1,4 @@
-﻿namespace Common.DTO.Login
+﻿namespace Service.DTO.Auth
 {
     public class LoginRequest
     {

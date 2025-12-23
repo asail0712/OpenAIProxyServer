@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Common.DTO.Login;
+using Common.DTO.Auth;
 using DataAccess.Interface;
 using XPlan.DataAccess;
 

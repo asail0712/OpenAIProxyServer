@@ -1,4 +1,4 @@
-﻿using Common.DTO.Login;
+﻿using Common.DTO.Auth;
 
 using XPlan.Repository;
 

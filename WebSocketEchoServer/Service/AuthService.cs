@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
-using Common.DTO.Login;
+using Common.DTO.Auth;
+using Service.DTO.Auth;
+using Microsoft.AspNetCore.Mvc;
 using Repository.Interface;
 using Service.Exceptions;
 using Service.Interface;
@@ -44,6 +46,45 @@ namespace Service
                     Success = true,
                     Token   = token
                 };
+            }
+            catch (InvalidCredentialsException)
+            {
+                throw; // 讓上層統一轉 401
+            }
+            catch (Exception ex)
+            {
+                // DB / infra 類錯誤統一轉
+                throw new ServiceUnavailableException(ex.Message);
+            }
+        }
+
+        public async Task<bool> ChangePassword(ChangePasswordRequest request)
+        {
+            try
+            {
+                // 1. 檢查輸入參數
+                if (string.IsNullOrWhiteSpace(request.Account) ||
+                string.IsNullOrWhiteSpace(request.OldPassword) ||
+                string.IsNullOrWhiteSpace(request.NewPassword))
+                {
+                    throw new InvalidCredentialsException();
+                }
+
+                var staffData = await _repository.GetAsync(request.Account);
+
+                if (staffData == null)
+                {
+                    throw new InvalidCredentialsException();
+                }
+
+                if (staffData.PasswordHash != Utils.ComputeSha256Hash(request.OldPassword, _salt))
+                {
+                    throw new InvalidCredentialsException();
+                }
+
+                staffData.PasswordHash = Utils.ComputeSha256Hash(request.NewPassword, _salt);
+
+                return await _repository.UpdateAsync(staffData.Account, staffData);
             }
             catch (InvalidCredentialsException)
             {

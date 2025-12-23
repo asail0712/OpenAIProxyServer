@@ -6,7 +6,7 @@ using Repository.Interface;
 
 using XPlan.Repository;
 using XPlan.Utility.Caches;
-using Common.DTO.Login;
+using Common.DTO.Auth;
 
 namespace Repository
 {

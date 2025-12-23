@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 
-namespace Common.DTO.Login
+namespace Common.DTO.Auth
 {
     public class AuthProfile : Profile
     {

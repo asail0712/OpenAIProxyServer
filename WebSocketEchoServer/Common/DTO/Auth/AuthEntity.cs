@@ -1,6 +1,6 @@
 ﻿using XPlan.Entities;
 
-namespace Common.DTO.Login
+namespace Common.DTO.Auth
 {
     public class AuthEntity : IDBEntity
     {        

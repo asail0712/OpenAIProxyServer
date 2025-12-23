@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Entities;
 using XPlan.Entities;
 
-namespace Common.DTO.Login
+namespace Common.DTO.Auth
 {
     public class AuthDocument : IEntity, IDBEntity
     {

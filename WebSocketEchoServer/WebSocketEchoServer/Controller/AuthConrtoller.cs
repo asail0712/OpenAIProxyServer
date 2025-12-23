@@ -1,11 +1,7 @@
-﻿using Common.DTO.Login;
+﻿using Service.DTO.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using XPlan.Controller;
 
 namespace OpenAIProxyService.Controllers
@@ -24,6 +20,15 @@ namespace OpenAIProxyService.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var bResult = await _service.Login(request);
+
+            return Ok(bResult);
+        }
+
+
+        [HttpPost("ChangePassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var bResult = await _service.ChangePassword(request);
 
             return Ok(bResult);
         }
