@@ -1,7 +1,7 @@
-﻿using Service.DTO.Auth;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Service.DTO.Auth;
 using Service.Interface;
-
 using XPlan.Controller;
 
 namespace OpenAIProxyService.Controllers
@@ -16,6 +16,7 @@ namespace OpenAIProxyService.Controllers
 
         }
 
+        [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] IdentityRequest request)
         {
@@ -24,6 +25,7 @@ namespace OpenAIProxyService.Controllers
             return Ok(bResult);
         }
 
+        [AllowAnonymous]
         [HttpPost("CreateIdentity")]
         public async Task<IActionResult> CreateIdentity([FromBody] IdentityRequest request)
         {

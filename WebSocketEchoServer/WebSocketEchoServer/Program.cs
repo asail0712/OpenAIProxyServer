@@ -15,6 +15,7 @@ using XPlan.Service;
 using XPlan.Utility;
 using XPlan.WebSockets;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 /********************************************
@@ -25,10 +26,12 @@ builder.Services.AddExceptionHandling<ProxyServiceErrorFilter>();
 /********************************************
  * 註冊AutoMapper
  * ******************************************/
+// 直接指定 Profile
 builder.Services.AddAutoMapper(
-    cfg => cfg.AddMaps(typeof(Common.DTO.Auth.AuthProfile).Assembly),
-    typeof(Common.DTO.Auth.AuthProfile).Assembly
+    cfg => cfg.AddMaps(typeof(AuthProfile).Assembly),
+    typeof(AuthProfile).Assembly
 );
+
 builder.Services.AddAutoMapperProfiles(LoggerFactory.Create(builder =>
 {
     builder.AddConsole(); // 或其他你需要的設定
@@ -113,7 +116,6 @@ builder.Services.AddSwaggerGen(c =>
 
     c.OperationFilter<ControllerAddSummaryFilter>();    // 使用 Operation Filter 來給API加上註解
     c.DocumentFilter<ApiHiddenFilter>();                // 使用 Operation Filter 來給API加上開關
-    c.OperationFilter<AddAuthorizeCheckFilter>();       // 使用 Operation Filter 來給API加上認證
 });
 
 var app = builder.Build();

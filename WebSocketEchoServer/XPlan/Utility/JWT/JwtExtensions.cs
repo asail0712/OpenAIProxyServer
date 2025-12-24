@@ -14,6 +14,7 @@ using System.Text;
 using XPlan.Utility.Caches;
 using XPlan.Utility.Databases;
 using XPlan.Utility.Exceptions;
+using XPlan.Utility.Filter;
 
 namespace XPlan.Utility
 {
@@ -75,6 +76,9 @@ namespace XPlan.Utility
                     Scheme          = "Bearer",
                     BearerFormat    = "JWT"
                 });
+
+                // 讓每個 API 是否顯示鎖頭「自動跟著 AllowAnonymous 走」
+                c.OperationFilter<SwaggerAuthOperationFilter>();
             });
             return services;
         }
