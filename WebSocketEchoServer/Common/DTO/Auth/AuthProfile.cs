@@ -6,8 +6,6 @@ namespace Common.DTO.Auth
     {
         public AuthProfile()
         {
-            //CreateMap<LoginRequest, AuthEntity>();
-            //CreateMap<AuthEntity, LoginResponse>();
             CreateMap<AuthEntity, AuthDocument>();
             CreateMap<AuthDocument, AuthEntity>();
         }

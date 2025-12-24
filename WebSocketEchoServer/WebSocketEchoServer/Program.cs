@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using Common.DTO.Auth;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using OpenAIProxyService.Controllers;
@@ -10,6 +11,7 @@ using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using XPlan.Service;
 using XPlan.Utility;
 using XPlan.WebSockets;
 
@@ -23,10 +25,20 @@ builder.Services.AddExceptionHandling<ProxyServiceErrorFilter>();
 /********************************************
  * 註冊AutoMapper
  * ******************************************/
+builder.Services.AddAutoMapper(
+    cfg => cfg.AddMaps(typeof(Common.DTO.Auth.AuthProfile).Assembly),
+    typeof(Common.DTO.Auth.AuthProfile).Assembly
+);
 builder.Services.AddAutoMapperProfiles(LoggerFactory.Create(builder =>
 {
     builder.AddConsole(); // 或其他你需要的設定
 }));
+
+/********************************************
+ * 加上Database Settings
+ * ******************************************/
+builder.Services.InitialMongoDB(builder.Configuration);
+await builder.Services.InitialMongoDBEntity(builder.Configuration);
 
 /***********************************************************************************************
 * 從環境變數或 appsettings.json 取 API Key 與 Realtime 參數
