@@ -23,7 +23,7 @@ namespace XPlan.Service
         public virtual async Task<TResponse> CreateAsync(TRequest request)
         {
             var entity  = _mapper.Map<TEntity>(request);            // 將請求映射為 Entity
-            entity      = await _repository.CreateAsync(entity);    // 實際呼叫 Repository 建立資料
+            entity      = await _repository.InsertAsync(entity);    // 實際呼叫 Repository 建立資料
 
             return _mapper.Map<TResponse>(entity);                  // 將建立結果映射成回傳格式
         }
