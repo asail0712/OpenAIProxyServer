@@ -2,7 +2,7 @@
 
 using XPlan.Utility.Exceptions;
 
-namespace Common.Filter
+namespace OpenAIProxyService.Controllers
 {
     public class POSServiceErrorCode
     {

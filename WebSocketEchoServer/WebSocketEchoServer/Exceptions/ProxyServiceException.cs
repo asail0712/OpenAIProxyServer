@@ -1,6 +1,6 @@
 ﻿using XPlan.Utility.Exceptions;
 
-namespace Common.Exceptions
+namespace OpenAIProxyServer.Exceptions
 {
     // Management
     //public class StaffNotFoundException : CustomException

@@ -1,6 +1,6 @@
 ﻿using XPlan.Utility.Filter;
 
-namespace Common.Filter
+namespace OpenAIProxyService.Controllers
 {
     public class ApiHiddenFilter : HiddenApiDocumentFilter
     {

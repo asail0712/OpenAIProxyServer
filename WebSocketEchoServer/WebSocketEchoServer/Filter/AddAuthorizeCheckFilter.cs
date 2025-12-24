@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using XPlan.Utility.Filter;
 
-namespace Common.Filter
+namespace OpenAIProxyService.Controllers
 {
     public class AddAuthorizeCheckFilter : AuthorizeCheckFilter
     {
