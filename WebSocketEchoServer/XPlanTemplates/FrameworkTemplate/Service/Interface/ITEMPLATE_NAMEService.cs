@@ -1,6 +1,5 @@
-﻿using Common.DTO.TEMPLATE_NAME;
-
-using XPlan.Service;
+﻿using XPlan.Service;
+using Service.DTO.TEMPLATE_NAME;
 
 namespace Service.Interface
 {

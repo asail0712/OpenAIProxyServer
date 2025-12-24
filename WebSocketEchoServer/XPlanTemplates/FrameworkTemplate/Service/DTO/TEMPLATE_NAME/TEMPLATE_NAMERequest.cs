@@ -1,4 +1,4 @@
-﻿namespace Common.DTO.TEMPLATE_NAME
+﻿namespace Service.DTO.TEMPLATE_NAME
 {
     public class TEMPLATE_NAMERequest
     {

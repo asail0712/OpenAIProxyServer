@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Service.DTO.TEMPLATE_NAME;
 
 namespace Common.DTO.TEMPLATE_NAME
 {
