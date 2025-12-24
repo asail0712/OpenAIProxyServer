@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using OpenAIProxyService.Controllers;
-using OpenAIProxyServer.Exceptions;
 using OpenAIProxyService.Extension;
 using OpenAIProxyService.Websocket;
 using System.Collections.Concurrent;
